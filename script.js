@@ -29,7 +29,6 @@ function gameBoard() {
     for (let i = 0; i < size; i++) {
         gameboard.push(Cell());
     }
-    
 
     // return the game board
     function getGameBoard() {
@@ -38,22 +37,22 @@ function gameBoard() {
 
     // display the game board
     function displayGameBoard() {
-        for (let i = 0; i < gameboard.length; i += 3) {
-            let row = gameboard.slice(i, i + 3);
-            let rowValues = row.map(cell => cell.getValue() === 0 ? '-' : cell.getValue());
-            console.log(rowValues.join(' | '));
-            if (i < gameboard.length - 3) {
-                console.log('---------');
+        const boardElement = document.getElementById('board');
+        boardElement.innerHTML = '';
+        for (let i = 0; i < gameboard.length; i++) {
+            const cellElement = document.createElement('div');
+            cellElement.classList.add('cell');
+            cellElement.dataset.index = i;
+            cellElement.textContent = gameboard[i].getValue() === 0 ? '' : gameboard[i].getValue();
+            boardElement.appendChild(cellElement);
         }
-    }}
+    }
 
     return {
         getGameBoard,
         displayGameBoard
     }
-
 }
-
 
 // create a player
 function Player(name, token) {
@@ -91,11 +90,6 @@ function gameController() {
     // return the current player
     function getCurrentPlayer() {
         return currentPlayer;
-    }
-
-    // return the game board
-    function getGameBoard() {
-        return gameboard;
     }
 
     // check if a player has won
@@ -140,45 +134,44 @@ function gameController() {
     function resetGame() {
         game = gameBoard();
         gameboard = game.getGameBoard();
+        game.displayGameBoard();
+        document.getElementById('status').textContent = '';
     }
 
     // play the game
     function playGame() {
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
         let win = false;
         let tie = false;
 
-        while (!win && !tie) {
-            game.displayGameBoard();
-            let currentPlayer = getCurrentPlayer();
-            let move = prompt(`${currentPlayer.getPlayer()}: Enter your move (1-9): `);
-            move = move - 1;
+        boardElement.addEventListener('click', (event) => {
+            if (event.target.classList.contains('cell')) {
+                const index = event.target.dataset.index;
 
-            if (gameboard[move].getValue() === 0) {
-                gameboard[move].setValue(currentPlayer);
-                win = checkWin();
-                tie = checkTie();
-                changePlayer();
-            } else {
-                console.log('Invalid move. Try again.');
+                if (gameboard[index].getValue() === 0) {
+                    gameboard[index].setValue(currentPlayer);
+                    game.displayGameBoard();
+                    win = checkWin();
+                    tie = checkTie();
+
+                    if (win) {
+                        statusElement.textContent = `${currentPlayer.getPlayer()} wins!`;
+                    } else if (tie) {
+                        statusElement.textContent = 'It\'s a tie!';
+                    } else {
+                        changePlayer();
+                    }
+                } else {
+                    statusElement.textContent = 'Invalid move. Try again.';
+                }
             }
-        }
+        });
 
-        game.displayGameBoard();
-
-        if (win) {
-            changePlayer(); // change player back to the winning player
-            console.log(`${currentPlayer.getPlayer()} wins!`);
-        } else if (tie) {
-            console.log('It\'s a tie!');
-        }
+        document.getElementById('reset').addEventListener('click', resetGame);
     }
 
     return {
-        changePlayer,
-        getCurrentPlayer,
-        getGameBoard,
-        checkWin,
-        checkTie,
         resetGame,
         playGame
     }
@@ -186,6 +179,5 @@ function gameController() {
 
 const game = gameController();
 game.playGame();
-
 
 
