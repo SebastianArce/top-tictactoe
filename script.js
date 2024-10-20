@@ -145,6 +145,8 @@ function gameController() {
         let win = false;
         let tie = false;
 
+        game.displayGameBoard();
+
         boardElement.addEventListener('click', (event) => {
             if (event.target.classList.contains('cell')) {
                 const index = event.target.dataset.index;
